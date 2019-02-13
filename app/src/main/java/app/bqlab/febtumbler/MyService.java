@@ -11,7 +11,10 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
-public class NotifyService extends Service {
+public class MyService extends Service {
+
+    public static int temp, goal;
+    public static boolean isConnected, isBuzzed;
 
     NotificationManager notificationManager;
     NotificationChannel notificationChannel;
@@ -43,6 +46,19 @@ public class NotifyService extends Service {
                 .setContentIntent(p)
                 .build();
         startForeground(1, notification);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (isConnected) {
+                    if (temp == goal && !isBuzzed) {
+                        isBuzzed = true;
+                        makeNotification("목표 온도에 도달했습니다.");
+                    }
+                    if (!(temp == goal) && isBuzzed)
+                        isBuzzed = false;
+                }
+            }
+        }).start();
         return START_NOT_STICKY;
     }
 
@@ -59,7 +75,7 @@ public class NotifyService extends Service {
         }
     }
 
-    public void makeNotification(String content) { //알림을 만드는 함수
+    public void makeNotification(String content) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.notify(0, new NotificationCompat.Builder(this, "em")
                     .setSmallIcon(R.mipmap.ic_launcher)

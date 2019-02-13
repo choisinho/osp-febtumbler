@@ -1,17 +1,13 @@
 package app.bqlab.febtumbler;
 
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,8 +28,6 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_DISCOVERABLE = 1;
 
     //variables
-    int temp;
-    boolean isConnected;
     BluetoothSPP mBluetooth;
     BluetoothAdapter mAdapter;
     NotificationManager notificationManager;
@@ -93,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.main_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isConnected) {
+                if (MyService.isConnected) {
                     final EditText e = new EditText(MainActivity.this);
                     e.setInputType(InputType.TYPE_CLASS_NUMBER);
                     new AlertDialog.Builder(MainActivity.this)
@@ -103,9 +97,10 @@ public class MainActivity extends AppCompatActivity {
                             .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    if (isConnected) {
+                                    if (MyService.isConnected) {
                                         Toast.makeText(MainActivity.this, "온도를 " + e.getText().toString() + "도로 변경합니다.", Toast.LENGTH_SHORT).show();
                                         mBluetooth.send(e.getText().toString(), true);
+                                        MyService.goal = Integer.parseInt(e.getText().toString());
                                     }
                                 }
                             })
@@ -153,50 +148,29 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataReceived(byte[] data, String message) {
                     ((TextView) MainActivity.this.findViewById(R.id.main_temp)).setText(message);
-                    temp = Integer.parseInt(message);
+                    MyService.temp = Integer.parseInt(message);
                 }
             });
             spp.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
                 @Override
                 public void onDeviceConnected(String name, String address) {
                     Toast.makeText(MainActivity.this, "장치와 연결되었습니다.", Toast.LENGTH_LONG).show();
-                    isConnected = true;
+                    startService(new Intent(MainActivity.this, MyService.class));
+                    MyService.isConnected = true;
                 }
 
                 @Override
                 public void onDeviceDisconnected() {
                     Toast.makeText(MainActivity.this, "장치와 연결할 수 없습니다.", Toast.LENGTH_LONG).show();
-                    isConnected = false;
+                    MyService.isConnected = false;
                 }
 
                 @Override
                 public void onDeviceConnectionFailed() {
                     Toast.makeText(MainActivity.this, "장치와 연결할 수 없습니다.", Toast.LENGTH_LONG).show();
-                    isConnected = false;
+                    MyService.isConnected = false;
                 }
             });
-        }
-    }
-
-    public void makeNotification(String content) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.notify(0, new NotificationCompat.Builder(this, "em")
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle(content)
-                    .setWhen(System.currentTimeMillis())
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .build());
-        } else {
-            notificationManager.notify(0, new Notification.Builder(this)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle(content)
-                    .setWhen(System.currentTimeMillis())
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setPriority(Notification.PRIORITY_HIGH)
-                    .build());
         }
     }
 }

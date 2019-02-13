@@ -40,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mBluetooth.stopService();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_CANCELED) {
             switch (requestCode) {
@@ -77,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         mBluetooth = new BluetoothSPP(this);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
-        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
-        findViewById(R.id.main_temp).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.main_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isConnected) {
@@ -91,8 +96,10 @@ public class MainActivity extends AppCompatActivity {
                             .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Toast.makeText(MainActivity.this, "온도를 " + e.getText().toString() + "도로 변경합니다.", Toast.LENGTH_SHORT).show();
-                                    //send temp data to device
+                                    if (isConnected) {
+                                        Toast.makeText(MainActivity.this, "온도를 " + e.getText().toString() + "도로 변경합니다.", Toast.LENGTH_SHORT).show();
+                                        mBluetooth.send(e.getText().toString(), true);
+                                    }
                                 }
                             })
                             .setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -132,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
             mBluetooth.setupService();
             mBluetooth.startService(BluetoothState.DEVICE_OTHER);
             connectBluetooth();
-        } else if (mAdapter.getScanMode()!=BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE), REQUEST_DISCOVERABLE);
         } else {
             startActivityForResult(new Intent(getApplicationContext(), DeviceList.class), BluetoothState.REQUEST_CONNECT_DEVICE);
             Toast.makeText(this, "연결할 디바이스를 선택하세요.", Toast.LENGTH_LONG).show();

@@ -1,12 +1,17 @@
 package app.bqlab.febtumbler;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isConnected;
     BluetoothSPP mBluetooth;
     BluetoothAdapter mAdapter;
+    NotificationManager notificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         mBluetooth = new BluetoothSPP(this);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         findViewById(R.id.main_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,6 +175,28 @@ public class MainActivity extends AppCompatActivity {
                     isConnected = false;
                 }
             });
+        }
+    }
+
+    public void makeNotification(String content) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.notify(0, new NotificationCompat.Builder(this, "em")
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(content)
+                    .setWhen(System.currentTimeMillis())
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .build());
+        } else {
+            notificationManager.notify(0, new Notification.Builder(this)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(content)
+                    .setWhen(System.currentTimeMillis())
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setPriority(Notification.PRIORITY_HIGH)
+                    .build());
         }
     }
 }

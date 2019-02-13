@@ -11,39 +11,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="가열 텀블러 온도:" />
-
-        <TextView
-            android:id="@+id/main_temp_heat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="0" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="도" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="냉각 텀블러 온도:" />
+            android:text="텀블러 온도:" />
 
         <TextView
-            android:id="@+id/main_temp_cool"
+            android:id="@+id/main_temp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -56,14 +34,8 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/main_heat"
+        android:id="@+id/main_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="가열 기능이 있는 텀블러 세팅" />
-
-    <Button
-        android:id="@+id/main_cool"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="냉각 기능이 있는 텀블러 세팅" />
+        android:text="텀블러 세팅" />
 </LinearLayout>

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final EditText e = new EditText(MainActivity.this);
+                e.setInputType(InputType.TYPE_CLASS_NUMBER);
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("가열 텀블러 설정")
                         .setMessage("목표 온도를 설정하세요.")
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final EditText e = new EditText(MainActivity.this);
+                e.setInputType(InputType.TYPE_CLASS_NUMBER);
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("냉각 텀블러 설정")
                         .setMessage("목표 온도를 설정하세요.")

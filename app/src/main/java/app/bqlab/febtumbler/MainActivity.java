@@ -77,9 +77,10 @@ public class MainActivity extends AppCompatActivity {
                             .show();
                     break;
             }
-        } else if (resultCode == Activity.RESULT_OK) {
+        } else {
             switch (requestCode) {
                 case BluetoothState.REQUEST_CONNECT_DEVICE:
+                    assert data != null;
                     mBluetooth.connect(data);
                     break;
             }
@@ -120,16 +121,16 @@ public class MainActivity extends AppCompatActivity {
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle("텀블러 설정")
                             .setMessage("장치와 연결되어 있지 않습니다.")
-                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            })
-                            .setNeutralButton("장치와 연결하기", new DialogInterface.OnClickListener() {
+                            .setPositiveButton("연결", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     connectBluetooth();
+                                }
+                            })
+                            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
                                 }
                             }).show();
                 }
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             this.mBluetooth.setupService();
             this.mBluetooth.startService(BluetoothState.DEVICE_OTHER);
             connectBluetooth();
-        } else {
+        } else if (mBluetooth.getServiceState() != BluetoothState.STATE_CONNECTED){
             startActivityForResult(new Intent(getApplicationContext(), DeviceList.class), BluetoothState.REQUEST_CONNECT_DEVICE);
             Toast.makeText(this, "연결할 디바이스를 선택하세요.", Toast.LENGTH_LONG).show();
             mBluetooth.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {

@@ -77,6 +77,12 @@ public class MainActivity extends AppCompatActivity {
                             .show();
                     break;
             }
+        } else if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case BluetoothState.REQUEST_CONNECT_DEVICE:
+                    mBluetooth.connect(data);
+                    break;
+            }
         }
     }
 
@@ -132,26 +138,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void connectBluetooth() {
-        BluetoothSPP spp = new BluetoothSPP(this);
-        if (!mBluetooth.isBluetoothAvailable()) {
+        if (!this.mBluetooth.isBluetoothAvailable()) {
             Toast.makeText(this, "지원하지 않는 기기입니다.", Toast.LENGTH_LONG).show();
-        } else if (!mBluetooth.isBluetoothEnabled()) {
+        } else if (!this.mBluetooth.isBluetoothEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BLUETOOTH);
-        } else if (!mBluetooth.isServiceAvailable()) {
-            mBluetooth.setupService();
-            mBluetooth.startService(BluetoothState.DEVICE_OTHER);
+        } else if (!this.mBluetooth.isServiceAvailable()) {
+            this.mBluetooth.setupService();
+            this.mBluetooth.startService(BluetoothState.DEVICE_OTHER);
             connectBluetooth();
         } else {
             startActivityForResult(new Intent(getApplicationContext(), DeviceList.class), BluetoothState.REQUEST_CONNECT_DEVICE);
             Toast.makeText(this, "연결할 디바이스를 선택하세요.", Toast.LENGTH_LONG).show();
-            spp.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
+            mBluetooth.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
                 @Override
                 public void onDataReceived(byte[] data, String message) {
                     ((TextView) MainActivity.this.findViewById(R.id.main_temp)).setText(message);
                     MyService.temp = Integer.parseInt(message);
                 }
             });
-            spp.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
+            mBluetooth.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
                 @Override
                 public void onDeviceConnected(String name, String address) {
                     Toast.makeText(MainActivity.this, "장치와 연결되었습니다.", Toast.LENGTH_LONG).show();

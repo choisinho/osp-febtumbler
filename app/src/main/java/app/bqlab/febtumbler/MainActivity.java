@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,8 +27,10 @@ public class MainActivity extends AppCompatActivity {
     //constants
     final int REQUEST_ENABLE_BLUETOOTH = 0;
     final int REQUEST_DISCOVERABLE = 1;
-
+    final String FLAG_TEMP = "1";
+    final String FLAG_WEIGHT = "2";
     //variables
+    String flag;
     BluetoothSPP mBluetooth;
     BluetoothAdapter mAdapter;
     NotificationManager notificationManager;
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         mBluetooth = new BluetoothSPP(this);
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        findViewById(R.id.main_button).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.main_button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (MyService.isConnected) {
@@ -107,8 +110,52 @@ public class MainActivity extends AppCompatActivity {
                                     if (MyService.isConnected) {
                                         Toast.makeText(MainActivity.this, "온도를 " + e.getText().toString() + "도로 변경합니다.", Toast.LENGTH_SHORT).show();
                                         mBluetooth.send(e.getText().toString(), true);
-                                        MyService.goal = Integer.parseInt(e.getText().toString());
+                                        MyService.goalTemp = Integer.parseInt(e.getText().toString());
                                     }
+                                }
+                            })
+                            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            }).show();
+                } else {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("텀블러 설정")
+                            .setMessage("장치와 연결되어 있지 않습니다.")
+                            .setPositiveButton("연결", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    connectBluetooth();
+                                }
+                            })
+                            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            }).show();
+                }
+            }
+        });
+        findViewById(R.id.main_button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (MyService.isConnected) {
+                    final EditText e = new EditText(MainActivity.this);
+                    e.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("텀블러 설정")
+                            .setMessage("목표 량을 설정하세요. (최소 30ml)")
+                            .setView(e)
+                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (Integer.parseInt(e.getText().toString()) >= 30)
+                                        MyService.goalMl = Integer.parseInt(e.getText().toString());
+                                    else
+                                        Toast.makeText(MainActivity.this, "30 이상을 입력하세요.", Toast.LENGTH_LONG).show();
                                 }
                             })
                             .setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -147,14 +194,29 @@ public class MainActivity extends AppCompatActivity {
             this.mBluetooth.setupService();
             this.mBluetooth.startService(BluetoothState.DEVICE_OTHER);
             connectBluetooth();
-        } else if (mBluetooth.getServiceState() != BluetoothState.STATE_CONNECTED){
+        } else if (mBluetooth.getServiceState() != BluetoothState.STATE_CONNECTED) {
             startActivityForResult(new Intent(getApplicationContext(), DeviceList.class), BluetoothState.REQUEST_CONNECT_DEVICE);
             Toast.makeText(this, "연결할 디바이스를 선택하세요.", Toast.LENGTH_LONG).show();
             mBluetooth.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
                 @Override
                 public void onDataReceived(byte[] data, String message) {
-                    ((TextView) MainActivity.this.findViewById(R.id.main_temp)).setText(message);
-                    MyService.temp = Integer.parseInt(message);
+                    Log.d("값", message);
+                    switch (message) {
+                        case FLAG_TEMP:
+                            flag = FLAG_TEMP;
+                            return;
+                        case FLAG_WEIGHT:
+                            flag = FLAG_WEIGHT;
+                            return;
+                    }
+                    if (flag != null) {
+                        if (flag.equals(FLAG_TEMP)) {
+                            ((TextView) MainActivity.this.findViewById(R.id.main_temp)).setText(message);
+                            MyService.temp = Integer.parseInt(message);
+                        } else if (flag.equals(FLAG_WEIGHT)) {
+                            MyService.ml = Integer.parseInt(message) * 10;
+                        }
+                    }
                 }
             });
             mBluetooth.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
@@ -167,8 +229,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onDeviceDisconnected() {
-                    Toast.makeText(MainActivity.this, "장치와 연결할 수 없습니다.", Toast.LENGTH_LONG).show();
                     MyService.isConnected = false;
+                    finishAffinity();
                 }
 
                 @Override

@@ -34,8 +34,14 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/main_button"
+        android:id="@+id/main_button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="텀블러 세팅" />
+        android:text="온도 세팅" />
+
+    <Button
+        android:id="@+id/main_button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="음료 세팅" />
 </LinearLayout>

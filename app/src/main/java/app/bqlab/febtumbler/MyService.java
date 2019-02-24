@@ -13,10 +13,12 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.security.AlgorithmConstraints;
+
 public class MyService extends Service {
 
     public static int temp, ml, goalTemp, goalMl;
-    public static boolean isConnected, isTempBuzzed = true, isMlBuzzed = true;
+    public static boolean isConnected, isTempBuzzed, isMlBuzzed;
 
     NotificationManager notificationManager;
     NotificationChannel notificationChannel;
@@ -51,24 +53,25 @@ public class MyService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (isConnected) {
-                    if (temp == goalTemp && !isTempBuzzed) {
-                        isTempBuzzed = true;
-                        makeNotification("목표 온도에 도달했습니다.");
+                while (isConnected) {
+                    if (goalTemp != 0) {
+                        if (temp == goalTemp && !isTempBuzzed) {
+                            isTempBuzzed = true;
+                            makeNotification("목표 온도에 도달했습니다.");
+                        }
+                        if (!(temp == goalTemp) && isTempBuzzed)
+                            isTempBuzzed = false;
                     }
-                    if (!(temp == goalTemp) && isTempBuzzed)
-                        isTempBuzzed = false;
+                    Log.d("무게", String.valueOf(ml));
                     if (goalMl != 0) {
-                        if (ml == goalMl && isMlBuzzed) {
+                        if (ml >= goalMl && !isMlBuzzed) {
                             goalMl = 0;
                             isMlBuzzed = true;
                             makeNotification("목표 량에 도달했습니다.");
                         }
-                        if (!(ml == goalMl) && isMlBuzzed)
+                        if (!(ml >= goalMl) && isMlBuzzed)
                             isMlBuzzed = false;
                     }
-                } else {
-                    stopSelf();
                 }
             }
         }).start();

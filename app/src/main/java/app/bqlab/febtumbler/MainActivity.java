@@ -200,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
             mBluetooth.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
                 @Override
                 public void onDataReceived(byte[] data, String message) {
-                    Log.d("값", message);
                     switch (message) {
                         case FLAG_TEMP:
                             flag = FLAG_TEMP;
@@ -223,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDeviceConnected(String name, String address) {
                     Toast.makeText(MainActivity.this, "장치와 연결되었습니다.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(MainActivity.this, MyService.class));
                     MyService.isConnected = true;
+                    startService(new Intent(MainActivity.this, MyService.class));
                 }
 
                 @Override
